@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function esSocioVentas() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          'sebas.arenas8512@gmail.com',
+          'vraul6988@gmail.com',
+          'santiagovelezmira@gmail.com'
+        ];
+    }
+
+    match /equipos/{teamId}/{collectionId}/{documentId} {
+      allow read, write: if esSocioVentas()
+        && teamId == 'principal'
+        && collectionId in [
+          'config',
+          'orders',
+          'sales',
+          'expenses',
+          'partners',
+          'capital',
+          'tasks',
+          'products'
+        ];
+    }
+
+    match /equipos/{teamId}/auditLogs/{entryId} {
+      allow read, write: if false;
+    }
+  }
+}
