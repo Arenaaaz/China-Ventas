@@ -173,48 +173,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .live a{display:inline-flex;align-items:center;min-height:32px;padding:2px 6px;border-radius:6px}
 .live a:hover{background:var(--acb);color:var(--tx)!important}
 @media(max-width:600px){.summary-columns{grid-template-columns:1fr;gap:10px}.summary-profit{align-items:flex-start;flex-direction:column;gap:7px;padding:15px}.summary-profit p{text-align:left}.summary-profit strong{font-size:24px}.summary-group{padding:12px 15px}}
-.summary-switch{display:flex;gap:4px;padding:4px;border:1px solid var(--ln);border-radius:11px;background:var(--card)}
-.summary-switch button{min-height:38px;padding:7px 12px;border:0;border-radius:8px;background:transparent;color:var(--mut);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
-.summary-switch button[aria-pressed="true"]{background:var(--acb);color:var(--ac)}
-.summary-switch button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.summary-allocation{margin:0 0 14px;padding:14px 16px;border:1px solid var(--ln);border-radius:14px;background:var(--card)}
-.summary-allocation .summary-row:first-child{border-top:0;padding-top:0}
-.order-payout-list{display:grid;gap:10px}
-.order-payout-card{overflow:hidden;border:1px solid var(--ln);border-radius:14px;background:var(--card)}
-.order-payout-card>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;list-style:none}
-.order-payout-card>summary::-webkit-details-marker{display:none}
-.order-payout-card>summary:after{content:"＋";color:var(--ac);font-weight:700}
-.order-payout-card[open]>summary:after{content:"−"}
-.order-payout-card[open]>summary{border-bottom:1px solid var(--ln);background:var(--acb)}
-.order-payout-title{min-width:0}
-.order-payout-title b,.order-payout-title span{display:block}
-.order-payout-title span{margin-top:3px;color:var(--mut);font-size:12px}
-.order-payout-total{text-align:right;white-space:nowrap}
-.order-payout-total span{display:block;color:var(--mut);font-size:11px}
-.order-payout-body{display:grid;gap:12px;padding:14px 16px}
-.order-payout-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-.order-payout-metrics .chip{display:flex;justify-content:space-between;gap:8px;border-radius:10px}
-.order-payout-body h3{margin:0;font-size:13px}
-.order-payout-note{margin:0;font-size:12px}
-.history-total{margin-bottom:14px}
-.history-total .summary-row:first-child{border-top:0;padding-top:0}
-.summary-explanation{line-height:1.55}
-.order-payout-body .tw{overflow-x:auto}
-.order-payout-body table{min-width:620px}
-.summary-history-note{margin-bottom:14px}
-.audit-list{display:grid;gap:12px}
-.audit-entry{padding:14px 16px;border:1px solid var(--ln);border-radius:13px;background:var(--card)}
-.audit-entry h3{margin:0;font-size:14px}
-.audit-entry p{margin:4px 0;color:var(--mut);font-size:12px}
-.audit-entry details{margin-top:9px}
-.audit-entry summary{font-size:12px;color:var(--ac);cursor:pointer}
-.audit-entry pre{max-height:300px;overflow:auto;padding:10px;border-radius:8px;background:var(--bg);font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
-<script src="order-distribution.js"></script>
 </head><body>
 <div class="w">
 <header><h1>China Reventas </h1><span class="live" id="lv"></span></header>
@@ -224,7 +186,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 <div id="m"><div class="md" id="md"></div></div><div id="t"></div>
 <script>
 const DEF=[{name:'Web: crear o actualizar (hito)',pts:40},{name:'Video: grabar y editar',pts:15},{name:'Mensajes: atención del día',pts:5},{name:'Contabilidad: cierre semanal',pts:10},{name:'Empaque y envío (por pedido)',pts:3},{name:'Compras y contacto con proveedor',pts:10}];
-const TABS=[['resumen','Resumen'],['productos','Productos'],['pedidos','Pedidos'],['ventas','Ventas'],['gastos','Gastos'],['socios','Socios'],['puntos','Puntos'],['cambios','Cambios']];
+const TABS=[['resumen','Resumen'],['productos','Productos'],['pedidos','Pedidos'],['ventas','Ventas'],['gastos','Gastos'],['socios','Socios'],['puntos','Puntos']];
 const F={
  orders:{t:'Pedido',f:[]},
  sales:{t:'Venta',f:[['date','Fecha','date'],['productId','Producto','sel:products'],['orderId','Pedido / lote','sel:orders'],['qty','Cantidad','number'],['total','Precio de venta por unidad','number'],['buyer','Cliente','text']]},
@@ -234,7 +196,7 @@ const F={
  tasks:{t:'Tarea realizada',f:[['date','Fecha','date'],['partnerId','Socio','sel:partners'],['type','Tarea','sel:catalog'],['qty','Cantidad','number'],['note','Nota','text']]}
 };
 const OPT=['note','buyer','sku','photoURL','websiteURL','productId','orderId','total','paidByPartnerId'];
-let db=null,tab='resumen',summaryView='general',access='signed-out',listeners=[],authEmail='',authCheck=0,auditAllowed=false,auditEntries=[],auditCursor=null,auditLoading=false,auditHasMore=false,auditError='',orderDraftItems=[],S={orders:[],sales:[],expenses:[],partners:[],capital:[],tasks:[],products:[],cfg:null};
+let db=null,tab='resumen',access='signed-out',listeners=[],authEmail='',authCheck=0,orderDraftItems=[],S={orders:[],sales:[],expenses:[],partners:[],capital:[],tasks:[],products:[],cfg:null};
 const $=s=>document.querySelector(s);
 const num=v=>+v||0;
 const fmt=n=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(n||0);
@@ -261,14 +223,12 @@ function calc(){
   }
   const saleRevenue=num(s.total)||num(s.unitPrice)*num(s.qty)||(product?num(product.price)*num(s.qty):0);
   rev+=saleRevenue;
-  const cost=OrderDistribution.saleCost(s,product,linkedOrder,saleRevenue);
-  cogs+=num(s.qty)*cost.unitCost;
-  if(!cost.resolved)uncostedSales++;
   if(product){
-   const stats=productStats[product.id];
-   stats.sold+=num(s.qty);stats.revenue+=saleRevenue;stats.cost+=num(s.qty)*cost.unitCost;
+   const stats=productStats[product.id],unitCost=s.productCost==null?num(product.cost):num(s.productCost);
+   stats.sold+=num(s.qty);stats.revenue+=num(s.total);stats.cost+=num(s.qty)*unitCost;cogs+=num(s.qty)*unitCost;
   }else{
-   const o=O[s.orderId];if(o)o.sold+=num(s.qty);
+   const o=O[s.orderId];if(o){o.sold+=num(s.qty);cogs+=num(s.qty)*o.unit}
+   else if(linkedOrder&&Array.isArray(linkedOrder.items))uncostedSales++;
   }
  });
  const productUnitsSold=Object.values(productStats).reduce((sum,p)=>sum+p.sold,0);
@@ -294,55 +254,15 @@ const tbl=(h,rows,na)=>`<div class="tw"><table><thead><tr>${h.map(x=>`<th>${x}</
 const act=(c,id)=>`<td class="ac"><button class="ic" type="button" data-action="edit" data-collection="${esc(c)}" data-id="${esc(id)}">Editar</button><button class="ic danger" type="button" data-action="delete" data-collection="${esc(c)}" data-id="${esc(id)}">Borrar</button></td>`;
 document.getElementById('v').addEventListener('click',e=>{const b=e.target instanceof Element?e.target.closest('button[data-action]'):null;if(!b)return;const{action,collection,id}=b.dataset;if(action==='edit')openForm(collection,id);else if(action==='delete')del(collection,id,b)});
 
-function orderDistribution(C){
- return OrderDistribution.calculate({
-  orders:S.orders,
-  sales:S.sales,
-  products:S.products,
-  expenses:S.expenses,
-  partnerShares:C.P.map(p=>({id:p.id,name:p.name,capitalPct:p.capPct,pointsPct:p.ptsPct,points:p.pts})),
-  pool:C.pool,
-  companyProfit:C.profit
- });
-}
-function historyPartnerTable(distribution){
- const rows=distribution.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${fmt(p.capitalPayout)}</td><td>${fmt(p.pointsPayout)}</td><td><b>${fmt(p.totalPayout)}</b></td></tr>`).join('');
- return tbl(['Socio','Por capital','Por puntos','Total histórico'],rows,1);
-}
-function orderPayoutCard(group){
- const memberRows=group.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${fmt(p.invested)}</td><td>${pc(p.capitalPct)}</td><td>${fmt(p.capitalPayout)}</td><td>${pc(p.pointsPct)}</td><td>${fmt(p.pointsPayout)}</td><td><b>${fmt(p.totalPayout)}</b></td></tr>`).join('');
- const metrics=`<div class="order-payout-metrics"><span class="chip">Ventas <b>${fmt(group.revenue)}</b></span><span class="chip">Costo vendido <b>${fmt(group.costOfGoodsSold)}</b></span><span class="chip">Gastos asignados <b>${fmt(group.expenses)}</b></span><span class="chip">Resultado neto <b class="${group.netProfit<0?'neg':''}">${fmt(group.netProfit)}</b></span>${group.kind==='order'?`<span class="chip">Costo de compra <b>${fmt(group.purchaseCost)}</b></span>`:''}<span class="chip">Ganancia distribuible <b>${fmt(group.payoutProfit)}</b></span></div>`;
- const note=group.estimatedCapitalSplit&&group.capitalPool>0?'<p class="mut order-payout-note">Este pedido no tiene aportes individuales registrados; el fondo de capital se estimó con la participación histórica de capital.</p>':'';
- const loss=group.netProfit<0?'<p class="mut order-payout-note">Este pedido tuvo pérdida. La pérdida se descuenta antes de repartir las ganancias de los pedidos rentables.</p>':'';
- return `<details class="order-payout-card"><summary><span class="order-payout-title"><b>${esc(group.name)}</b><span>${esc(group.date||'Ajuste sin pedido')} · ${group.unitsSold} unidades vendidas</span></span><span class="order-payout-total"><span>A entregar</span><b>${fmt(group.payoutProfit)}</b></span></summary><div class="order-payout-body">${metrics}${note}${loss}<h3>Reparto entre socios</h3>${tbl(['Socio','Aporte','% aportado','Fondo capital','% puntos','Fondo puntos','Total a entregar'],memberRows,1)}</div></details>`;
-}
-function orderDistributionView(distribution){
- const orderGroups=byDate(distribution.groups.filter(group=>group.kind==='order'));
- const otherGroups=distribution.groups.filter(group=>group.kind!=='order');
- const cards=[...orderGroups,...otherGroups].map(orderPayoutCard).join('');
- const note='Los gastos generales se prorratean entre pedidos según sus ventas. Las pérdidas reducen la ganancia histórica antes de repartirla. El fondo de capital se divide según los aportes de cada pedido; el fondo de trabajo conserva los porcentajes de puntos actuales.';
- const noProfit=distribution.historicalProfit<=0?'<div class="note" style="margin-bottom:14px">La utilidad neta histórica no es positiva; por ahora no hay ganancias estimadas para entregar.</div>':'';
- return `<div class="note summary-history-note">${note}</div>${uncostedSalesNote(distribution.uncostedSales)}<div class="summary-profit"><div><span>Ganancia neta histórica</span><strong class="${distribution.historicalProfit<0?'neg':''}">${fmt(distribution.historicalProfit)}</strong></div><p>Total disponible para distribuir: ${fmt(distribution.totalPayout)}</p></div>${noProfit}<div class="summary-group" style="margin-bottom:14px"><h3>Acumulado por socio</h3>${historyPartnerTable(distribution)}</div><h2 style="margin:0 0 10px">Pedidos y ajustes</h2>${cards?`<div class="order-payout-list">${cards}</div>`:'<div class="note">Todavía no hay pedidos ni ventas registrados.</div>'}<p class="mut summary-explanation">Estos son montos estimados a entregar; la app no registra si cada socio retiró o reinvirtió su parte.</p>`;
-}
-function uncostedSalesNote(count){
- return count?`<div class="note" style="margin-bottom:14px">${count} venta${count===1?'':'s'} no tiene un costo identificable. Se le asigna temporalmente un costo igual a su venta y se bloquea el reparto hasta corregir${count===1?'la':'las'}. Vincula${count===1?'la':'las'} con un producto o pedido para calcular el resultado real.</div>`:'';
+function reparto(C){
+ const rows=C.P.map(p=>`<tr><td>${esc(p.name)}</td><td>${fmt(p.cap)}</td><td>${pc(p.capPct)}</td><td>${p.pts}</td><td>${pc(p.ptsPct)}</td><td>${fmt(p.sCap)}</td><td>${fmt(p.sWork)}</td><td><b class="${p.share<0?'neg':''}">${fmt(p.share)}</b></td></tr>`).join('');
+ return tbl(['Socio','Capital','% capital','Puntos','% trabajo','Por capital','Por trabajo','Total'],rows,1);
 }
 const V={
- resumen(C){
-  const distribution=orderDistribution(C);
-  const switcher=`<div class="summary-switch" role="group" aria-label="Vista del resumen">${[['general','General'],['historico','Histórico'],['pedido','Por pedido']].map(([key,label])=>`<button type="button" aria-pressed="${summaryView===key}" onclick="setSummaryView('${key}')">${label}</button>`).join('')}</div>`;
-  let content='';
-  if(summaryView==='pedido'){
-   content=orderDistributionView(distribution);
-  }else if(summaryView==='historico'){
-   content=`<div class="summary-profit"><div><span>Ganancias netas de toda la historia</span><strong class="${C.profit<0?'neg':''}">${fmt(C.profit)}</strong></div><p>Ventas − costo de lo vendido − gastos de marca.</p></div>${uncostedSalesNote(C.uncostedSales)}<div class="summary-columns"><section class="summary-group"><h3>Resultado acumulado</h3>${summaryRow('Ventas',fmt(C.rev))}${summaryRow('Costo de prendas vendidas',fmt(C.cogs))}${summaryRow('Utilidad bruta',fmt(C.grossProfit),C.grossProfit<0?'neg':'')}${summaryRow('Gastos de marca',fmt(C.exp))}${summaryRow('Utilidad neta histórica',fmt(C.profit),C.profit<0?'neg':'')}</section><section class="summary-group"><h3>Fondos históricos</h3>${summaryRow('Fondo de capital',fmt(C.profit>0?distribution.partners.reduce((sum,p)=>sum+p.capitalPayout,0):0))}${summaryRow('Fondo de trabajo',fmt(C.profit>0?distribution.partners.reduce((sum,p)=>sum+p.pointsPayout,0):0))}${summaryRow('Total estimado a entregar',fmt(distribution.totalPayout))}</section></div>${hd('Ganancias acumuladas por socio')}${historyPartnerTable(distribution)}<p class="mut summary-explanation">El reparto de capital usa los aportes registrados en cada pedido. Si un pedido histórico no tiene aportes individuales, se estima usando la proporción global de capital. Estos montos no registran si se retiraron o reinvirtieron.</p>`;
-  }else{
-   content=`<div class="summary-profit"><div><span>Utilidad neta</span><strong class="${C.profit<0?'neg':''}">${fmt(C.profit)}</strong></div><p>Resultado después del costo de las prendas y los gastos de marca.</p></div><div class="summary-columns"><section class="summary-group"><h3>Resultado</h3>${summaryRow('Ventas',fmt(C.rev))}${summaryRow('Costo de prendas vendidas',fmt(C.cogs))}${summaryRow('Utilidad bruta',fmt(C.grossProfit),C.grossProfit<0?'neg':'')}${summaryRow('Gastos de marca',fmt(C.exp))}</section><section class="summary-group"><h3>Caja e inventario</h3>${summaryRow('Caja estimada',fmt(C.cash),C.cash<0?'neg':'')}${summaryRow('Invertido en pedidos',fmt(C.spent))}${summaryRow('Inventario a costo',fmt(C.stock))}${summaryRow('Unidades vendidas',C.productUnitsSold)}${summaryRow('Unidades disponibles',C.productInventory)}</section></div>`
-   +uncostedSalesNote(C.uncostedSales)
-   +`<p class="mut summary-explanation">Utilidad bruta = ventas − costo de las prendas vendidas (incluye flete). Utilidad neta = utilidad bruta − gastos de marca.</p>`;
-  }
-  return hd('Resumen',switcher)+content;
- },
+ resumen(C){return hd('Estado del negocio')+`<div class="summary-profit"><div><span>Utilidad neta</span><strong class="${C.profit<0?'neg':''}">${fmt(C.profit)}</strong></div><p>Resultado después del costo de las prendas y los gastos de marca.</p></div><div class="summary-columns"><section class="summary-group"><h3>Resultado</h3>${summaryRow('Ventas',fmt(C.rev))}${summaryRow('Costo de prendas vendidas',fmt(C.cogs))}${summaryRow('Utilidad bruta',fmt(C.grossProfit),C.grossProfit<0?'neg':'')}${summaryRow('Gastos de marca',fmt(C.exp))}</section><section class="summary-group"><h3>Caja e inventario</h3>${summaryRow('Caja estimada',fmt(C.cash),C.cash<0?'neg':'')}${summaryRow('Invertido en pedidos',fmt(C.spent))}${summaryRow('Inventario a costo',fmt(C.stock))}${summaryRow('Unidades vendidas',C.productUnitsSold)}${summaryRow('Unidades disponibles',C.productInventory)}</section></div>`
+ +(C.uncostedSales?`<div class="note" style="margin-top:12px">${C.uncostedSales} venta${C.uncostedSales===1?'':'s'} de pedidos nuevos no tiene${C.uncostedSales===1?'':'n'} una prenda identificada; edítala${C.uncostedSales===1?'':'s'} en Ventas y selecciona el producto para incluir su costo exacto.</div>`:'')
+ +hd('Reparto de ganancias')+reparto(C)
+ +`<p class="mut summary-explanation">Utilidad bruta = ventas − costo de las prendas vendidas (incluye flete). Utilidad neta = utilidad bruta − gastos de marca. ${C.pool}% de la utilidad neta va al fondo de trabajo (por puntos) y ${100-C.pool}% al fondo de capital.${C.profit<=0?' Sin utilidad neta positiva no se reparte fondo de trabajo.':''}</p>`},
  productos(C){
   const cards=S.products.map(p=>{
    const stats=C.productStats[p.id]||{sold:0,revenue:0,cost:0},left=Math.max(0,num(p.stock)-stats.sold);
@@ -383,22 +303,7 @@ const V={
   +hd('Fondo de trabajo')+`<div class="tw" style="padding:12px 14px;display:flex;align-items:center;gap:12px"><span>% de la utilidad para trabajo</span><input class="ps" type="number" min="0" max="100" value="${c.pool}" onchange="saveCfg({pool:Math.min(100,Math.max(0,+this.value))})"><span class="mut">= ${fmt(C.wp)} ahora</span></div>`
   +hd('Tabla de puntos',`<button class="btn g" type="button" onclick="addCat()">+ Tipo de tarea</button>`)+tbl(['Tarea','Puntos por unidad'],cat)
   +hd('Ranking de trabajo')+tbl(['Socio','Puntos','% trabajo','Le corresponde'],rk,1)
-  +hd('Registro de tareas',add('tasks','Tarea'))+tbl(['Fecha','Socio','Tarea','Cant.','Puntos','Nota'],lg)},
- cambios(){
-  const actionLabels={created:'Creado',updated:'Editado',deleted:'Eliminado'};
-  const collectionLabels={sales:'Venta',orders:'Pedido / compra',expenses:'Gasto',products:'Producto',capital:'Aporte de capital',partners:'Socio',tasks:'Tarea',config:'Configuración'};
-  const entries=auditEntries.map(entry=>{
-   const actor=entry.actor&& (entry.actor.email||entry.actor.uid)||'Usuario no identificado';
-   const date=entry.changedAt?new Intl.DateTimeFormat('es-CO',{dateStyle:'short',timeStyle:'short'}).format(new Date(entry.changedAt)):'Fecha no disponible';
-   const changes=Object.entries(entry.changes||{}).map(([field,change])=>`<div><b>${esc(field)}</b><pre>Antes: ${esc(JSON.stringify(change.before,null,2))}\nDespués: ${esc(JSON.stringify(change.after,null,2))}</pre></div>`).join('');
-   const changeCount=Number.isInteger(entry.changeCount)?entry.changeCount:Object.keys(entry.changes||{}).length;
-   const truncation=entry.truncated?'<p class="mut">Cambio grande: se muestra una vista previa limitada para mantener el registro dentro del límite de Firestore.</p>':'';
-   return `<article class="audit-entry"><h3>${esc(actionLabels[entry.action]||entry.action)} · ${esc(collectionLabels[entry.collection]||entry.collection)} · ${esc(entry.documentId)}</h3><p>${esc(date)} · ${esc(actor)}</p><details><summary>Ver campos modificados (${changeCount})</summary>${truncation}${changes||'<p class="mut">Sin diferencias de campos.</p>'}</details></article>`;
-  }).join('');
-  const error=auditError?`<div class="note">${esc(auditError)}</div>`:'';
-  const more=auditHasMore?'<button class="btn g" type="button" onclick="loadAuditLogs(false)" '+(auditLoading?'disabled':'')+'>Cargar más cambios</button>':'';
-  return hd('Historial de cambios')+`<div class="note" style="margin-bottom:14px">Registro automático de ventas, pedidos, gastos, productos, aportes, socios y tareas. Solo los administradores autorizados pueden consultar este historial. El registro comienza al desplegar el backend; no reconstruye cambios anteriores.</div>`+error+(auditLoading&&!auditEntries.length?'<p class="mut">Cargando cambios…</p>':'')+(entries?`<div class="audit-list">${entries}</div>`:!auditLoading&&!auditError?'<p class="mut">Todavía no hay cambios registrados.</p>':'')+(auditLoading&&auditEntries.length?'<p class="mut">Cargando…</p>':'')+more;
- }
+  +hd('Registro de tareas',add('tasks','Tarea'))+tbl(['Fecha','Socio','Tarea','Cant.','Puntos','Nota'],lg)}
 };
 
 function render(){
@@ -410,30 +315,10 @@ function render(){
   else $('#v').innerHTML=gate();
   return;
  }
- $('#nv').innerHTML=TABS.filter(([k])=>k!=='cambios'||auditAllowed).map(([k,l])=>`<button class="${k==tab?'on':''}" type="button" aria-current="${k==tab?'page':'false'}" onclick="go('${k}')">${l}</button>`).join('');
+ $('#nv').innerHTML=TABS.map(([k,l])=>`<button class="${k==tab?'on':''}" type="button" aria-current="${k==tab?'page':'false'}" onclick="go('${k}')">${l}</button>`).join('');
  $('#v').innerHTML=V[tab](calc());
 }
-function go(t){if(t==='cambios'&&!auditAllowed)return;tab=t;render();if(t==='cambios')loadAuditLogs(true);window.scrollTo(0,0)}
-function setSummaryView(view){summaryView=view;render()}
-async function loadAuditLogs(reset){
- if(!auditAllowed||auditLoading)return;
- if(reset){auditEntries=[];auditCursor=null;auditHasMore=false;auditError=''}
- auditLoading=true;render();
- try{
-  const response=await firebase.functions().httpsCallable('listAuditLogs')({limit:50,before:auditCursor});
-  const data=response.data||{},entries=Array.isArray(data.entries)?data.entries:[];
-  auditEntries=reset?entries:auditEntries.concat(entries);
-  auditCursor=data.nextBefore&&Number.isFinite(data.nextBefore.changedAt)&&typeof data.nextBefore.id==='string'?data.nextBefore:null;
-  auditHasMore=Boolean(data.hasMore);
- }catch(error){
-  console.error('No se pudo cargar el historial de cambios:',error);
-  auditError='No se pudo cargar el historial de cambios. Revisa la conexión y los permisos del administrador.';
-  toast(auditError);
- }finally{
-  auditLoading=false;
-  if(tab==='cambios')render();
- }
-}
+function go(t){tab=t;render();window.scrollTo(0,0)}
 
 function openForm(c,id){
  if(c==='orders')return openOrderForm(id);
@@ -612,6 +497,7 @@ function previewProductUrl(value){
  if(value){preview.src=value;preview.hidden=false}else preview.hidden=true;
 }
 function closeM(){$('#m').classList.remove('on')}
+$('#m').addEventListener('click',e=>{if(e.target.id=='m')closeM()});
 
 async function save(c,id){
  if(c==='products')return saveProduct(id);
@@ -784,7 +670,7 @@ function start(){
  firebase.initializeApp(FB);
  firebase.auth().onAuthStateChanged(u=>{
   const attempt=++authCheck;
-  stopListeners();db=null;clearData();tab='resumen';auditAllowed=false;auditEntries=[];auditCursor=null;auditLoading=false;auditHasMore=false;auditError='';
+  stopListeners();db=null;clearData();
   if(!u){access='signed-out';authEmail='';$('#lv').textContent='';return render()}
   access='checking';authEmail=u.email||'esta cuenta';$('#lv').textContent='';
   T='principal';const userDb=mk();
@@ -794,18 +680,6 @@ function start(){
    $('#lv').innerHTML='En vivo · '+esc(authEmail)+' · <a href="#" onclick="logout();return false" style="color:inherit">salir</a>';
    listeners.push(userDb.doc('config/main').onSnapshot(snapshot=>{S.cfg=snapshot.exists?snapshot.data():null;render()},accessError));
    ['orders','sales','expenses','partners','capital','tasks','products'].forEach(k=>listeners.push(userDb.collection(k).onSnapshot(sn=>{S[k]=sn.docs.map(d=>({id:d.id,...d.data()}));render()},accessError)));
-   firebase.functions().httpsCallable('checkAuditAccess')().then(response=>{
-    if(attempt!==authCheck)return;
-    auditAllowed=!!(response.data&&response.data.allowed);
-    if(!auditAllowed&&tab==='cambios')tab='resumen';
-    render();
-   }).catch(error=>{
-    if(attempt!==authCheck)return;
-    console.error('No se pudo verificar el acceso al historial:',error);
-     toast('No se pudo verificar el acceso al historial. Recarga la página para volver a intentarlo.');
-    if(tab==='cambios')tab='resumen';
-    render();
-   });
    render();
   }).catch(e=>{if(attempt===authCheck)accessError(e,true)});
   render();
